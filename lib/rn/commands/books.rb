@@ -12,7 +12,15 @@ module RN
         ]
 
         def call(name:, **)
-          warn "TODO: Implementar creación del cuaderno de notas con nombre '#{name}'.\nPodés comenzar a hacerlo en #{__FILE__}:#{__LINE__}."
+          if not Dir.exist? name
+            begin
+              Dir.mkdir name
+            rescue Errno::EINVAL
+              puts 'Los nombres de los archivos no puede contener ninguno de los siguientes caracteres: / \ : * ? < > | " '
+            end
+          else
+            warn "Este libro/directorio ya existe"
+          end
         end
       end
 
@@ -29,8 +37,13 @@ module RN
         ]
 
         def call(name: nil, **options)
+          #FUNCIONA COMO EL ORTO
           global = options[:global]
-          warn "TODO: Implementar borrado del cuaderno de notas con nombre '#{name}' (global=#{global}).\nPodés comenzar a hacerlo en #{__FILE__}:#{__LINE__}."
+          if global or name.equal? "global"
+            FileUtils.rm Dir.entries("#{Dir.pwd}/global")
+          else
+            FileUtils.rm_r Dir.entries("#{Dir.pwd}/#{name}")
+          end
         end
       end
 
@@ -42,7 +55,10 @@ module RN
         ]
 
         def call(*)
-          warn "TODO: Implementar listado de los cuadernos de notas.\nPodés comenzar a hacerlo en #{__FILE__}:#{__LINE__}."
+          #enumerable = Dir.pwd {|file| puts "Book: #{file}"}
+          #p enumerable
+          Dir.each_child (Dir.pwd) {|file| puts "Book: #{file}"}
+          #p (Dir.each_child (Dir.pwd)).to_enum
         end
       end
 
@@ -59,7 +75,13 @@ module RN
         ]
 
         def call(old_name:, new_name:, **)
-          warn "TODO: Implementar renombrado del cuaderno de notas con nombre '#{old_name}' para que pase a llamarse '#{new_name}'.\nPodés comenzar a hacerlo en #{__FILE__}:#{__LINE__}."
+          abort "El book global no se puede renombrar" unless not old_name == 'global'
+          abort "Este libro/directorio no se puede renombrar ya que existe un libro con ese nombre" unless not Dir.exist? new_name
+          begin
+            FileUtils.mv(old_name,new_name)
+          rescue Errno::EINVAL
+            puts 'Los nombres de los archivos no puede contener ninguno de los siguientes caracteres: / \ : * ? < > | " '
+          end
         end
       end
     end
