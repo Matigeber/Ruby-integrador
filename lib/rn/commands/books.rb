@@ -19,7 +19,7 @@ module RN
               puts 'Los nombres de los archivos no puede contener ninguno de los siguientes caracteres: / \ : * ? < > | " '
             end
           else
-            warn "Este libro/directorio ya existe"
+            warn "Este libro ya existe"
           end
         end
       end
@@ -55,10 +55,7 @@ module RN
         ]
 
         def call(*)
-          #enumerable = Dir.pwd {|file| puts "Book: #{file}"}
-          #p enumerable
           Dir.each_child (Dir.pwd) {|file| puts "Book: #{file}"}
-          #p (Dir.each_child (Dir.pwd)).to_enum
         end
       end
 
@@ -75,6 +72,8 @@ module RN
         ]
 
         def call(old_name:, new_name:, **)
+          old_name = old_name.sub(/A"/, "").sub(/"z/, "")
+          new_name = new_name.sub(/A"/, "").sub(/"z/, "")
           abort "El book global no se puede renombrar" unless not old_name == 'global'
           abort "Este libro/directorio no se puede renombrar ya que existe un libro con ese nombre" unless not Dir.exist? new_name
           begin

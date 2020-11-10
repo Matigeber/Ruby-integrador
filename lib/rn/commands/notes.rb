@@ -1,6 +1,11 @@
 module RN
   module Commands
     module Notes
+      def self.childs(path)
+        Dir.each_child(path){|f| puts "note: #{f}"}
+      end
+      def remove_quotes(book,title)
+      end
       class Create < Dry::CLI::Command
         desc 'Create a note'
 
@@ -15,7 +20,18 @@ module RN
 
         def call(title:, **options)
           book = options[:book]
-          warn "TODO: Implementar creación de la nota con título '#{title}' (en el libro '#{book}').\nPodés comenzar a hacerlo en #{__FILE__}:#{__LINE__}."
+          book = book.sub(/A"/, "").sub(/"z/, "")
+          title = title.sub(/A"/, "").sub(/"z/, "")
+          abort "No existe ese libro" unless book.nil? or Dir.exist? book
+          if book.nil?
+            path = "#{Dir.pwd}/global/#{title}.rn"
+          else
+            path = "#{Dir.pwd}/#{book}/#{title}.rn"
+          end
+          if File.exist? path
+            abort "Esta nota ya existe"
+          end
+          File.new(path,'w+')
         end
       end
 
@@ -51,7 +67,15 @@ module RN
 
         def call(title:, **options)
           book = options[:book]
-          warn "TODO: Implementar modificación de la nota con título '#{title}' (del libro '#{book}').\nPodés comenzar a hacerlo en #{__FILE__}:#{__LINE__}."
+          book = book.sub(/A"/, "").sub(/"z/, "")
+          title = title.sub(/A"/, "").sub(/"z/, "")
+          #estas expresiones sacan las comillas de los extremos
+          if book.nil?
+            path = "#{Dir.pwd}/global/#{title}.rn"
+          else
+            path = "#{Dir.pwd}/#{book}/#{title}.rn"
+          end
+          TTY::Editor.open(path)
         end
       end
 
@@ -70,7 +94,21 @@ module RN
 
         def call(old_title:, new_title:, **options)
           book = options[:book]
-          warn "TODO: Implementar cambio del título de la nota con título '#{old_title}' hacia '#{new_title}' (del libro '#{book}').\nPodés comenzar a hacerlo en #{__FILE__}:#{__LINE__}."
+          old_title = old_title.sub(/A"/, "").sub(/"z/, "")
+          new_title = new_title.sub(/A"/, "").sub(/"z/, "")
+          if book.nil?
+            path = "#{Dir.pwd}/global"
+          else
+            book = book.sub(/A"/, "").sub(/"z/, "")
+            abort "Ese libro no existe" unless Dir.exist? book
+            path = "#{Dir.pwd}/#{book}"
+          end
+          oldpath = path + "/#{old_title}.rn"
+          newpath = path + "/#{new_title}.rn"
+          if File.exist? newpath
+            abort "Esta nota no se puede renombrar ya que existe una nota con ese nombre"
+          end
+          File.rename(oldpath,newpath)
         end
       end
 
@@ -90,7 +128,26 @@ module RN
         def call(**options)
           book = options[:book]
           global = options[:global]
-          warn "TODO: Implementar listado de las notas del libro '#{book}' (global=#{global}).\nPodés comenzar a hacerlo en #{__FILE__}:#{__LINE__}."
+          path = Dir.pwd
+          if global
+            path = File.join(Dir.pwd,"global")
+            puts "book: global"
+            Notes.childs path
+          elsif not book.nil?
+            book = book.sub(/A"/, "").sub(/"z/, "") #esta expresion saca las comillas de los extremos
+            path = File.join(Dir.pwd,book)
+            if not Dir.exist? path
+              abort "Este libro no existe"
+            end
+            puts "book: #{book}"
+            Notes.childs path
+          else
+            Dir.each_child (path) do
+            |file|
+              puts "Book: #{file}"
+              Dir.each_child ("#{Dir.pwd}/#{file}") {|f| puts " note: #{f}"}
+          end
+          end
         end
       end
 
@@ -108,7 +165,16 @@ module RN
 
         def call(title:, **options)
           book = options[:book]
-          warn "TODO: Implementar vista de la nota con título '#{title}' (del libro '#{book}').\nPodés comenzar a hacerlo en #{__FILE__}:#{__LINE__}."
+          title = title.sub(/A"/, "").sub(/"z/, "") #esta expresion saca las comillas de los extremos
+          if book.nil?
+            path = File.join(Dir.pwd,'global',"#{title}.rn")
+          else
+            path = File.join(Dir.pwd,book,"#{title}.rn")
+          end
+          if not File.exist? path
+            abort "Esta nota no existe"
+          end
+          File.foreach(path) {|line| puts line}
         end
       end
     end
