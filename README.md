@@ -109,3 +109,12 @@ puede requerir algún trabajo adicional de tu parte.
   * `lib/rn/version.rb` define la versión de la herramienta, utilizando [SemVer](https://semver.org/lang/es/).
 * `bin/`: directorio donde reside cualquier archivo ejecutable, siendo el más notorio `rn`
   que se utiliza como punto de entrada para el uso de la herramienta.
+
+### Decisiones de Diseño
+* Se opto para la creacion de los libros como de los cuadernos, manejar excepciones para cuando no esta permitido cierto caracter dentro del nombre proporcionado por el examen.
+
+* Se creo una funcion en el modulo Notes para usar herencia.
+
+* Con respecto a la edicion de la nota tome la decision de usar la gema "tty-editor" para que el usuario pueda elegir un editor de texto que tenga instalado por medio de un menu interactivo.
+
+* Dentro del bin/rn se crea el directorio raiz ".my_rns" dentro del home del usuario, como tambien un cuaderno global, y luego cambia el directorio de trabajo actual por el que es pasado como parametro para estar trabajando siempre desde dentro del ".my_rns"

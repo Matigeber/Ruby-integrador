@@ -4,8 +4,6 @@ module RN
       def self.childs(path)
         Dir.each_child(path){|f| puts "note: #{f}"}
       end
-      def remove_quotes(book,title)
-      end
       class Create < Dry::CLI::Command
         desc 'Create a note'
 
@@ -20,18 +18,23 @@ module RN
 
         def call(title:, **options)
           book = options[:book]
-          book = book.sub(/A"/, "").sub(/"z/, "")
           title = title.sub(/A"/, "").sub(/"z/, "")
-          abort "No existe ese libro" unless book.nil? or Dir.exist? book
+          abort "this book doesn't exist" unless book.nil? or Dir.exist? book
           if book.nil?
             path = "#{Dir.pwd}/global/#{title}.rn"
           else
+            book = book.sub(/A"/, "").sub(/"z/, "")
             path = "#{Dir.pwd}/#{book}/#{title}.rn"
           end
           if File.exist? path
-            abort "Esta nota ya existe"
+            abort "this note already exists"
           end
+          begin
           File.new(path,'w+')
+          puts "Note created successfully"
+          rescue Errno::EINVAL
+            puts 'the name of the notes cant included some special caracters '
+          end
         end
       end
 
@@ -49,7 +52,18 @@ module RN
 
         def call(title:, **options)
           book = options[:book]
-          warn "TODO: Implementar borrado de la nota con título '#{title}' (del libro '#{book}').\nPodés comenzar a hacerlo en #{__FILE__}:#{__LINE__}."
+          title= title.sub(/A"/, "").sub(/"z/, "")
+          if book.nil?
+            path = File.join(Dir.pwd,"global","#{title}.rn")
+          else
+            if Dir.exist? book
+              path = File.join(Dir.pwd,book,"#{title}.rn")
+            else
+              abort "this book doesn't exists"
+            end
+          end
+          File.delete path
+          puts "Note deleted successfully"
         end
       end
 
@@ -73,7 +87,11 @@ module RN
           if book.nil?
             path = "#{Dir.pwd}/global/#{title}.rn"
           else
-            path = "#{Dir.pwd}/#{book}/#{title}.rn"
+            if Dir.exist? book
+              path = "#{Dir.pwd}/#{book}/#{title}.rn"
+            else
+              puts "This book doesn't exists"
+            end
           end
           TTY::Editor.open(path)
         end
@@ -100,15 +118,16 @@ module RN
             path = "#{Dir.pwd}/global"
           else
             book = book.sub(/A"/, "").sub(/"z/, "")
-            abort "Ese libro no existe" unless Dir.exist? book
+            abort "This book doesn't exists" unless Dir.exist? book
             path = "#{Dir.pwd}/#{book}"
           end
           oldpath = path + "/#{old_title}.rn"
           newpath = path + "/#{new_title}.rn"
           if File.exist? newpath
-            abort "Esta nota no se puede renombrar ya que existe una nota con ese nombre"
+            abort "this note cannot be renamed because a note with this name already exists"
           end
           File.rename(oldpath,newpath)
+          puts "note renamed successfully"
         end
       end
 
@@ -137,7 +156,7 @@ module RN
             book = book.sub(/A"/, "").sub(/"z/, "") #esta expresion saca las comillas de los extremos
             path = File.join(Dir.pwd,book)
             if not Dir.exist? path
-              abort "Este libro no existe"
+              abort "this book does't exists"
             end
             puts "book: #{book}"
             Notes.childs path
@@ -169,10 +188,11 @@ module RN
           if book.nil?
             path = File.join(Dir.pwd,'global',"#{title}.rn")
           else
+            book = book.sub(/A"/, "").sub(/"z/, "")
             path = File.join(Dir.pwd,book,"#{title}.rn")
           end
           if not File.exist? path
-            abort "Esta nota no existe"
+            abort "this note doesn't exists"
           end
           File.foreach(path) {|line| puts line}
         end

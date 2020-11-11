@@ -15,11 +15,12 @@ module RN
           if not Dir.exist? name
             begin
               Dir.mkdir name
+              puts "book created successfully"
             rescue Errno::EINVAL
-              puts 'Los nombres de los archivos no puede contener ninguno de los siguientes caracteres: / \ : * ? < > | " '
+              puts 'the name of the notes cant included some special caracters'
             end
           else
-            warn "Este libro ya existe"
+            warn "this book  already exists"
           end
         end
       end
@@ -37,12 +38,30 @@ module RN
         ]
 
         def call(name: nil, **options)
-          #FUNCIONA COMO EL ORTO
           global = options[:global]
+          if name.nil? and not global
+            abort "you must enter a book name or --global"
+          end
           if global or name.equal? "global"
-            FileUtils.rm Dir.entries("#{Dir.pwd}/global")
+            Dir.each_child("#{Dir.pwd}/global") do
+              |file, path|
+              path = File.join(Dir.pwd,"global",file)
+              File.delete path
+              puts "Deleted file: #{file}"
+            end
           else
-            FileUtils.rm_r Dir.entries("#{Dir.pwd}/#{name}")
+            if Dir.exist? name
+              Dir.each_child("#{Dir.pwd}/#{name}") do
+              |file, path|
+                path = File.join(Dir.pwd,name,file)
+                File.delete path
+                puts "Deleted file: #{file}"
+              end
+              Dir.delete name
+              puts "Book deleted successfully"
+            else
+              abort "this book doesn't exist"
+            end
           end
         end
       end
@@ -74,15 +93,17 @@ module RN
         def call(old_name:, new_name:, **)
           old_name = old_name.sub(/A"/, "").sub(/"z/, "")
           new_name = new_name.sub(/A"/, "").sub(/"z/, "")
-          abort "El book global no se puede renombrar" unless not old_name == 'global'
-          abort "Este libro/directorio no se puede renombrar ya que existe un libro con ese nombre" unless not Dir.exist? new_name
+          abort "global book cannot be renamed" unless not old_name == 'global'
+          abort "this book cannot be renamed because a book with this name already exists" unless not Dir.exist? new_name
           begin
             FileUtils.mv(old_name,new_name)
+            puts "book renamed successfully"
           rescue Errno::EINVAL
-            puts 'Los nombres de los archivos no puede contener ninguno de los siguientes caracteres: / \ : * ? < > | " '
+            puts 'the name of the books cant included some special caracters'
           end
         end
       end
     end
   end
 end
+
