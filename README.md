@@ -111,7 +111,7 @@ puede requerir algún trabajo adicional de tu parte.
   que se utiliza como punto de entrada para el uso de la herramienta.
 
 ### Decisiones de Diseño
-* Se opto para la creacion de los libros como de los cuadernos, manejar excepciones para cuando no esta permitido cierto caracter dentro del nombre proporcionado por el examen.
+* Se opto para la creacion de los libros como de los cuadernos, manejar excepciones para cuando no esta permitido cierto caracter dentro del nombre proporcionado por el usuario.
 
 * Se creo una funcion en el modulo Notes para usar herencia.
 
