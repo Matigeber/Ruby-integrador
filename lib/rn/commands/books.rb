@@ -1,6 +1,7 @@
 module RN
   module Commands
     module Books
+      require 'rn/models/Book'
       class Create < Dry::CLI::Command
         desc 'Create a book'
 
@@ -12,16 +13,7 @@ module RN
         ]
 
         def call(name:, **)
-          if not Dir.exist? name
-            begin
-              Dir.mkdir name
-              puts "book created successfully"
-            rescue Errno::EINVAL
-              puts 'the name of the notes cant included some special caracters'
-            end
-          else
-            warn "this book  already exists"
-          end
+          Book.create name
         end
       end
 
@@ -43,22 +35,10 @@ module RN
             abort "you must enter a book name or --global"
           end
           if global or name.equal? "global"
-            Dir.each_child("#{Dir.pwd}/global") do
-              |file, path|
-              path = File.join(Dir.pwd,"global",file)
-              File.delete path
-              puts "Deleted file: #{file}"
-            end
+            Book.delete "global"
           else
             if Dir.exist? name
-              Dir.each_child("#{Dir.pwd}/#{name}") do
-              |file, path|
-                path = File.join(Dir.pwd,name,file)
-                File.delete path
-                puts "Deleted file: #{file}"
-              end
-              Dir.delete name
-              puts "Book deleted successfully"
+              Book.delete name
             else
               abort "this book doesn't exist"
             end
@@ -74,7 +54,7 @@ module RN
         ]
 
         def call(*)
-          Dir.each_child (Dir.pwd) {|file| puts "Book: #{file}"}
+          Book.list
         end
       end
 
@@ -95,12 +75,7 @@ module RN
           new_name = new_name.sub(/A"/, "").sub(/"z/, "")
           abort "global book cannot be renamed" unless not old_name == 'global'
           abort "this book cannot be renamed because a book with this name already exists" unless not Dir.exist? new_name
-          begin
-            FileUtils.mv(old_name,new_name)
-            puts "book renamed successfully"
-          rescue Errno::EINVAL
-            puts 'the name of the books cant included some special caracters'
-          end
+          Book.rename old_name, new_name
         end
       end
     end

@@ -4,6 +4,7 @@ module RN
       def self.childs(path)
         Dir.each_child(path){|f| puts "note: #{f}"}
       end
+      require 'rn/models/Note'
       class Create < Dry::CLI::Command
         desc 'Create a note'
 
@@ -29,12 +30,7 @@ module RN
           if File.exist? path
             abort "this note already exists"
           end
-          begin
-          File.new(path,'w+')
-          puts "Note created successfully"
-          rescue Errno::EINVAL
-            puts 'the name of the notes cant included some special caracters '
-          end
+          Note.create path
         end
       end
 
@@ -62,8 +58,7 @@ module RN
               abort "this book doesn't exists"
             end
           end
-          File.delete path
-          puts "Note deleted successfully"
+          Note.delete path
         end
       end
 
@@ -81,19 +76,20 @@ module RN
 
         def call(title:, **options)
           book = options[:book]
-          book = book.sub(/A"/, "").sub(/"z/, "")
+
           title = title.sub(/A"/, "").sub(/"z/, "")
           #estas expresiones sacan las comillas de los extremos
           if book.nil?
             path = "#{Dir.pwd}/global/#{title}.rn"
           else
             if Dir.exist? book
+              book = book.sub(/A"/, "").sub(/"z/, "")
               path = "#{Dir.pwd}/#{book}/#{title}.rn"
             else
               puts "This book doesn't exists"
             end
           end
-          TTY::Editor.open(path)
+          Note.edit path
         end
       end
 
@@ -123,11 +119,7 @@ module RN
           end
           oldpath = path + "/#{old_title}.rn"
           newpath = path + "/#{new_title}.rn"
-          if File.exist? newpath
-            abort "this note cannot be renamed because a note with this name already exists"
-          end
-          File.rename(oldpath,newpath)
-          puts "note renamed successfully"
+          Note.retitle oldpath, newpath
         end
       end
 
@@ -191,10 +183,7 @@ module RN
             book = book.sub(/A"/, "").sub(/"z/, "")
             path = File.join(Dir.pwd,book,"#{title}.rn")
           end
-          if not File.exist? path
-            abort "this note doesn't exists"
-          end
-          File.foreach(path) {|line| puts line}
+          Note.show path
         end
       end
     end
