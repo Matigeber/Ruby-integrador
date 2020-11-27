@@ -19,18 +19,19 @@ module RN
 
         def call(title:, **options)
           book = options[:book]
-          title = title.sub(/A"/, "").sub(/"z/, "")
-          abort "this book doesn't exist" unless book.nil? or Dir.exist? book
-          if book.nil?
-            path = "#{Dir.pwd}/global/#{title}.rn"
-          else
-            book = book.sub(/A"/, "").sub(/"z/, "")
-            path = "#{Dir.pwd}/#{book}/#{title}.rn"
-          end
-          if File.exist? path
-            abort "this note already exists"
-          end
-          Note.create path
+          # title = title.sub(/A"/, "").sub(/"z/, "")
+          # abort "this book doesn't exist" unless book.nil? or Dir.exist? book
+          # if book.nil?
+          #   path = "#{Dir.pwd}/global/#{title}.rn"
+          # else
+          #   book = book.sub(/A"/, "").sub(/"z/, "")
+          #   path = "#{Dir.pwd}/#{book}/#{title}.rn"
+          # end
+          # if File.exist? path
+          #   abort "this note already exists"
+          # end
+          # Note.create path
+          Note.new(title,book).create
         end
       end
 
@@ -48,17 +49,7 @@ module RN
 
         def call(title:, **options)
           book = options[:book]
-          title= title.sub(/A"/, "").sub(/"z/, "")
-          if book.nil?
-            path = File.join(Dir.pwd,"global","#{title}.rn")
-          else
-            if Dir.exist? book
-              path = File.join(Dir.pwd,book,"#{title}.rn")
-            else
-              abort "this book doesn't exists"
-            end
-          end
-          Note.delete path
+          Note.new(title,book).delete
         end
       end
 
@@ -76,20 +67,7 @@ module RN
 
         def call(title:, **options)
           book = options[:book]
-
-          title = title.sub(/A"/, "").sub(/"z/, "")
-          #estas expresiones sacan las comillas de los extremos
-          if book.nil?
-            path = "#{Dir.pwd}/global/#{title}.rn"
-          else
-            if Dir.exist? book
-              book = book.sub(/A"/, "").sub(/"z/, "")
-              path = "#{Dir.pwd}/#{book}/#{title}.rn"
-            else
-              puts "This book doesn't exists"
-            end
-          end
-          Note.edit path
+          Note.new(title,book).edit
         end
       end
 
@@ -108,18 +86,7 @@ module RN
 
         def call(old_title:, new_title:, **options)
           book = options[:book]
-          old_title = old_title.sub(/A"/, "").sub(/"z/, "")
-          new_title = new_title.sub(/A"/, "").sub(/"z/, "")
-          if book.nil?
-            path = "#{Dir.pwd}/global"
-          else
-            book = book.sub(/A"/, "").sub(/"z/, "")
-            abort "This book doesn't exists" unless Dir.exist? book
-            path = "#{Dir.pwd}/#{book}"
-          end
-          oldpath = path + "/#{old_title}.rn"
-          newpath = path + "/#{new_title}.rn"
-          Note.retitle oldpath, newpath
+          Note.new(old_title,book).retitle new_title
         end
       end
 
@@ -139,26 +106,7 @@ module RN
         def call(**options)
           book = options[:book]
           global = options[:global]
-          path = Dir.pwd
-          if global
-            path = File.join(Dir.pwd,"global")
-            puts "book: global"
-            Notes.childs path
-          elsif not book.nil?
-            book = book.sub(/A"/, "").sub(/"z/, "") #esta expresion saca las comillas de los extremos
-            path = File.join(Dir.pwd,book)
-            if not Dir.exist? path
-              abort "this book does't exists"
-            end
-            puts "book: #{book}"
-            Notes.childs path
-          else
-            Dir.each_child (path) do
-            |file|
-              puts "Book: #{file}"
-              Dir.each_child ("#{Dir.pwd}/#{file}") {|f| puts " note: #{f}"}
-          end
-          end
+          Note.list book,global
         end
       end
 
@@ -176,14 +124,7 @@ module RN
 
         def call(title:, **options)
           book = options[:book]
-          title = title.sub(/A"/, "").sub(/"z/, "") #esta expresion saca las comillas de los extremos
-          if book.nil?
-            path = File.join(Dir.pwd,'global',"#{title}.rn")
-          else
-            book = book.sub(/A"/, "").sub(/"z/, "")
-            path = File.join(Dir.pwd,book,"#{title}.rn")
-          end
-          Note.show path
+          Note.new(title,book).show
         end
       end
     end
