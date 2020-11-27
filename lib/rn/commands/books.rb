@@ -13,7 +13,7 @@ module RN
         ]
 
         def call(name:, **)
-          Book.create name
+          Book.new(name).create
         end
       end
 
@@ -34,15 +34,7 @@ module RN
           if name.nil? and not global
             abort "you must enter a book name or --global"
           end
-          if global or name.equal? "global"
-            Book.delete "global"
-          else
-            if Dir.exist? name
-              Book.delete name
-            else
-              abort "this book doesn't exist"
-            end
-          end
+          Book.new(name).delete global
         end
       end
 
@@ -71,11 +63,7 @@ module RN
         ]
 
         def call(old_name:, new_name:, **)
-          old_name = old_name.sub(/A"/, "").sub(/"z/, "")
-          new_name = new_name.sub(/A"/, "").sub(/"z/, "")
-          abort "global book cannot be renamed" unless not old_name == 'global'
-          abort "this book cannot be renamed because a book with this name already exists" unless not Dir.exist? new_name
-          Book.rename old_name, new_name
+          Book.new(old_name).rename new_name
         end
       end
     end

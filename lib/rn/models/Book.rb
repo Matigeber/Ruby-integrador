@@ -1,6 +1,14 @@
 class Book
 
-  def self.create (name)
+  GLOBAL_BOOK_NAME = 'global'
+
+  attr_accessor :name
+
+  def initialize nombre
+    self.name = nombre.sub(/A"/, "").sub(/"z/, "")
+  end
+
+  def create
     if not Dir.exist? name
       begin
         Dir.mkdir name
@@ -13,14 +21,19 @@ class Book
     end
   end
 
-  def self.delete (name)
+  def delete (global)
+    if global
+      name = GLOBAL_BOOK_NAME
+    elsif not Dir.exist? name
+      abort "this book doesn't exist"
+    end
     Dir.each_child("#{Dir.pwd}/#{name}") do
     |file, path|
       path = File.join(Dir.pwd,name,file)
       File.delete path
       puts "Deleted file: #{file}"
     end
-    if not name.equal? "global"
+    if not name.equal? GLOBAL_BOOK_NAME
       Dir.delete name
       puts "Book deleted successfully"
     end
@@ -30,9 +43,12 @@ class Book
     Dir.each_child (Dir.pwd) {|file| puts "Book: #{file}"}
   end
 
-  def self.rename (old_name, new_name)
+  def rename (new_name)
+    new_name = new_name.sub(/A"/, "").sub(/"z/, "")
+    abort "global book cannot be renamed" unless not name == GLOBAL_BOOK_NAME
+    abort "this book cannot be renamed because a book with this name already exists" unless not Dir.exist? new_name
     begin
-      FileUtils.mv(old_name,new_name)
+      FileUtils.mv(name,new_name)
       puts "book renamed successfully"
     rescue Errno::EINVAL
       puts 'the name of the books cant included some special caracters'

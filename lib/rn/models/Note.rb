@@ -14,7 +14,7 @@ class Note
     else
       if Dir.exist? book
         book = book.sub(/A"/, "").sub(/"z/, "")
-        return path = File.join(Dir.pwd,book,"#{title}.rn")
+        return File.join(Dir.pwd,book,"#{title}.rn")
       else
         abort "this book doesn't exists"
       end
