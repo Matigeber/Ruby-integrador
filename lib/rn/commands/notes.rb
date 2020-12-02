@@ -142,9 +142,10 @@ module RN
 
           if not title.nil?
             Note.new(title,book).export
-            puts 'exportacion exitosa'
+            puts 'successful export'
           else
             Note.exportEveryNotes(global,book)
+            puts "successful export"
           end
 
         end

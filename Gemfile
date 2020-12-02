@@ -6,4 +6,4 @@ gem 'dry-cli', '~> 0.6'
 
 gem "tty-editor"
 
-gem "redcarpet"
+gem "redcarpet", "~> 3.5.0"

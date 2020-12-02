@@ -27,7 +27,7 @@ PLATFORMS
 
 DEPENDENCIES
   dry-cli (~> 0.6)
-  redcarpet
+  redcarpet (~> 3.5.0)
   tty-editor
 
 RUBY VERSION

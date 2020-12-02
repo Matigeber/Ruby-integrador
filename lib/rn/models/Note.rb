@@ -70,23 +70,7 @@ class Note
   end
 
   def self.list (book,global)
-    path = Dir.pwd
-    if global
-      path = File.join(Dir.pwd,GLOBAL_BOOK_NAME)
-      self.childs path, GLOBAL_BOOK_NAME
-    elsif not book.nil?
-      book = book.sub(/A"/, "").sub(/"z/, "")
-      path = File.join(Dir.pwd,book)
-      if not Dir.exist? path
-        abort "this book doesn't exists"
-      end
-      self.childs path,book
-    else
-      Dir.each_child (path) do
-      |file|
-        self.childs path + "/#{file}",file
-      end
-    end
+    self.extract_method(method(:childs),global,book)
   end
 
   def show
@@ -95,13 +79,14 @@ class Note
     File.foreach(path) {|line| puts line}
   end
 
-  def contenido
+  def content_note
     path = validate_path_and_book "rn"
     validate_file path
     data = ""
     File.foreach(path) {|line| data += line + "\n"}
     data
   end
+
   def export(path=nil)
     if path.nil?
       path = validate_path_and_book "html"
@@ -109,7 +94,7 @@ class Note
       path + "/#{title}.html"
     end
     markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML, autolink: true)
-    render = markdown.render(self.contenido)
+    render = markdown.render(self.content_note)
     File.new(path,"w+").write(render)
   end
 
@@ -122,21 +107,25 @@ class Note
   end
 
   def self.exportEveryNotes(global=false, book=nil )
+    self.extract_method(method(:exportChilds),global,book)
+  end
+
+  def self.extract_method (function,global,book)
     path = Dir.pwd
     if global
       path = File.join(Dir.pwd,GLOBAL_BOOK_NAME)
-      Note.exportChilds path,GLOBAL_BOOK_NAME
+      function.call(path,GLOBAL_BOOK_NAME)
     elsif not book.nil?
       book = book.sub(/A"/, "").sub(/"z/, "")
       path = File.join(Dir.pwd,book)
       if not Dir.exist? path
-        abort "this book doesn't exists"
+        abort "this book doesn't exist"
       end
-      Note.exportChilds path,book
+      function.call(path,book)
     else
       Dir.each_child(path) do
-        |namebook|
-        Note.exportChilds path + "/#{namebook}",namebook
+      |namebook|
+        function.call(path + "/#{namebook}",namebook)
       end
     end
   end
