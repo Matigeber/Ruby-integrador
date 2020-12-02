@@ -19,19 +19,8 @@ module RN
 
         def call(title:, **options)
           book = options[:book]
-          # title = title.sub(/A"/, "").sub(/"z/, "")
-          # abort "this book doesn't exist" unless book.nil? or Dir.exist? book
-          # if book.nil?
-          #   path = "#{Dir.pwd}/global/#{title}.rn"
-          # else
-          #   book = book.sub(/A"/, "").sub(/"z/, "")
-          #   path = "#{Dir.pwd}/#{book}/#{title}.rn"
-          # end
-          # if File.exist? path
-          #   abort "this note already exists"
-          # end
-          # Note.create path
           Note.new(title,book).create
+          #note.edit
         end
       end
 
@@ -124,7 +113,40 @@ module RN
 
         def call(title:, **options)
           book = options[:book]
-          Note.new(title,book).show
+          nota = Note.new(title,book)
+          nota.show
+          nota.export
+        end
+      end
+
+      class Export < Dry::CLI::Command
+        desc 'Export notes'
+
+        option :book, type: :string, desc: 'Book'
+        option :title, type: :string, desc: 'Title of the note'
+        option :global, type: :boolean, default: false, desc: 'Export only notes from the global book'
+
+        example [
+                    '                 # Export notes from all books (including the global book)',
+                    '--book "My book" # Export notes from the book named "My book"',
+                    '--book Memoires  # Export notes from the book named "Memoires"',
+                    '--title todo     # Export note todo from the global book',
+                    '--title test --book "My book" #Export note test from the book named "My book"',
+                    '--global         # Export notes from the global book',
+                ]
+
+        def call(**options)
+          book = options[:book]
+          title = options[:title]
+          global = options[:global]
+
+          if not title.nil?
+            Note.new(title,book).export
+            puts 'exportacion exitosa'
+          else
+            Note.exportEveryNotes(global,book)
+          end
+
         end
       end
     end
