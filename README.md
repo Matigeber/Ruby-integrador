@@ -113,8 +113,11 @@ puede requerir algún trabajo adicional de tu parte.
 ### Decisiones de Diseño
 * Se opto para la creacion de los libros como de los cuadernos, manejar excepciones para cuando no esta permitido cierto caracter dentro del nombre proporcionado por el usuario.
 
-* Se creo una funcion en el modulo Notes para usar herencia.
+* Se creo un modelo de datos para los libros y las notas, para manejar la logica de cada uno dentro de estos
 
 * Con respecto a la edicion de la nota tome la decision de usar la gema "tty-editor" para que el usuario pueda elegir un editor de texto que tenga instalado por medio de un menu interactivo.
 
 * Dentro del bin/rn se crea el directorio raiz ".my_rns" dentro del home del usuario, como tambien un cuaderno global, y luego cambia el directorio de trabajo actual por el que es pasado como parametro para estar trabajando siempre desde dentro del ".my_rns"
+
+* Se pueden exportar las notas en un formato visualmente rico llamado "markdown" con la gema "RedCarpet", estos textos seran pasados a archivos HTML (tambien con la gema "RedCarpet" y uno por cada nota exportada), que estaran ubicados dentro del mismo cuaderno donde se encuentra la nota en texto plano
+ 
