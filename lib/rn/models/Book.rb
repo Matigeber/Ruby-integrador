@@ -1,57 +1,67 @@
 class Book
 
-  GLOBAL_BOOK_NAME = 'global'
-
   attr_accessor :name
 
   def initialize nombre
-    self.name = nombre.sub(/A"/, "").sub(/"z/, "")
+    self.name = Helper.format_name nombre
+  end
+
+  def path
+    "#{Helper.base_path}#{name}"
+  end
+
+  def list_notes
+    puts "book: #{self.name}"
+    Dir.each_child(self.path){|note| puts " note: #{note}"}
+  end
+
+  def self.list_all
+    Dir.each_child(Helper.base_path) do
+      |book|
+      self.new(book).list_notes
+    end
+  end
+
+  def self.export_all
+    Dir.each_child(Helper.base_path) do
+      |book|
+      self.new(book).export_childs
+    end
+  end
+
+  def export_childs
+    Dir.each_child(self.path) do
+    |note|
+      note = note.split(".")[0]
+      Note.new(note,self).export
+    end
+  end
+
+  def create_Note(title)
+    Note.new(title,self )
+  end
+
+  def delete_childs
+    Dir.each_child(self.path) do
+      |note|
+      self.create_Note(note).delete
+      puts("Deleted file: #{note}")
+    end
   end
 
   def create
-    if not Dir.exist? name
-      begin
-        Dir.mkdir name
-        puts "book created successfully"
-      rescue Errno::EINVAL
-        puts 'the name of the notes cant included some special caracters'
-      end
-    else
-      warn "this book  already exists"
-    end
+    Dir.mkdir name
   end
 
-  def delete (global)
-    if global
-      name = GLOBAL_BOOK_NAME
-    elsif not Dir.exist? name
-      abort "this book doesn't exist"
-    end
-    Dir.each_child("#{Dir.pwd}/#{name}") do
-    |file, path|
-      path = File.join(Dir.pwd,name,file)
-      File.delete path
-      puts "Deleted file: #{file}"
-    end
-    if not name.equal? GLOBAL_BOOK_NAME
-      Dir.delete name
-      puts "Book deleted successfully"
-    end
+  def delete
+    Dir.delete name
   end
 
   def self.list
-    Dir.each_child (Dir.pwd) {|file| puts "Book: #{file}"}
+    Dir.each_child(Helper.base_path) { |file| puts "Book: #{file}" }
   end
 
   def rename (new_name)
-    new_name = new_name.sub(/A"/, "").sub(/"z/, "")
-    abort "global book cannot be renamed" unless not name == GLOBAL_BOOK_NAME
-    abort "this book cannot be renamed because a book with this name already exists" unless not Dir.exist? new_name
-    begin
-      FileUtils.mv(name,new_name)
-      puts "book renamed successfully"
-    rescue Errno::EINVAL
-      puts 'the name of the books cant included some special caracters'
-    end
+    FileUtils.mv(name,new_name)
   end
 end

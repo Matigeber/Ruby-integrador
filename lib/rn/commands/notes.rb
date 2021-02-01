@@ -1,10 +1,10 @@
 module RN
   module Commands
     module Notes
-      def self.childs(path)
-        Dir.each_child(path){|f| puts "note: #{f}"}
-      end
+
+
       require 'rn/models/Note'
+      require 'rn/validator'
       class Create < Dry::CLI::Command
         desc 'Create a note'
 
@@ -19,7 +19,16 @@ module RN
 
         def call(title:, **options)
           book = options[:book]
-          Note.new(title,book).create
+          Helper.check_file_name(title)
+          if book.nil?
+            note =Book.new(Helper.global_book).create_Note(title)
+          else
+            Helper.book_exist? book
+            note = Book.new(book).create_Note title
+          end
+          Helper.note_exists? note.path "rn"
+          note.create
+
           #note.edit
         end
       end
@@ -38,7 +47,14 @@ module RN
 
         def call(title:, **options)
           book = options[:book]
-          Note.new(title,book).delete
+          book_instance = Helper.book_help book
+          note = book_instance.create_Note title
+          if File.exist? note.path("rn")
+            note.delete
+            puts "Note deleted successfully"
+          else
+            abort "this note doesn't exists"
+          end
         end
       end
 
@@ -56,7 +72,13 @@ module RN
 
         def call(title:, **options)
           book = options[:book]
-          Note.new(title,book).edit
+          note = Helper.book_help(book).create_Note(title)
+          if File.exist? note.path "rn"
+            note.edit
+          else
+            abort "this note doesn't exists"
+          end
+
         end
       end
 
@@ -75,7 +97,16 @@ module RN
 
         def call(old_title:, new_title:, **options)
           book = options[:book]
-          Note.new(old_title,book).retitle new_title
+          book_instance = Helper.book_help  book
+          note_old = book_instance.create_Note old_title
+          note_new = book_instance.create_Note new_title
+          puts(note_new.path("rn"))
+          if File.exist? note_new.path "rn"
+            abort "this note cannot be renamed because a note with this name already exists"
+          else
+            note_old.retitle note_new.path("rn")
+            puts "note renamed successfully"
+          end
         end
       end
 
@@ -95,7 +126,15 @@ module RN
         def call(**options)
           book = options[:book]
           global = options[:global]
-          Note.list book,global
+          if global
+            Book.new(Helper.global_book).list_notes
+          elsif book.nil?
+            Book.list_all
+          elsif Helper.book_exists? book
+            Book.new(book).list_notes
+          else
+            puts "The book '#{book}' doesn't exists"
+          end
         end
       end
 
@@ -113,9 +152,12 @@ module RN
 
         def call(title:, **options)
           book = options[:book]
-          nota = Note.new(title,book)
-          nota.show
-          nota.export
+          note = Helper.book_help(book).create_Note(title)
+          if File.exist? note.path"rn"
+            note.show
+          else
+            puts("This note doesn't exists")
+          end
         end
       end
 
@@ -140,12 +182,21 @@ module RN
           title = options[:title]
           global = options[:global]
 
-          if not title.nil?
-            Note.new(title,book).export
-            puts 'successful export'
+          if global and title
+            Book.new(Helper.global_book).create_Note(title).export
+            abort("successful export")
+          elsif book and title
+            Book.new(book).create_Note(title).export
+            abort("successful export")
+          elsif global and title.nil?
+            Book.new(Helper.global_book).export_childs
+            abort("successful export")
+          elsif book and title.nil?
+            Book.new(book).export_childs
+            abort("successful export")
           else
-            Note.exportEveryNotes(global,book)
-            puts "successful export"
+            Book.export_all
+            abort("successful export")
           end
 
         end

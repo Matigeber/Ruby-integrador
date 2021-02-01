@@ -13,7 +13,10 @@ module RN
         ]
 
         def call(name:, **)
+          Helper.check_folder_name name
+          abort("This book already exists") unless not Dir.exist? name
           Book.new(name).create
+          puts "Book created successfully"
         end
       end
 
@@ -33,8 +36,15 @@ module RN
           global = options[:global]
           if name.nil? and not global
             abort "you must enter a book name or --global"
+          elsif global
+            Book.new(Helper.global_book).delete_childs
+          else
+            Helper.book_exists? name
+            book = Book.new(name)
+            book.delete_childs
+            book.delete
+            puts "Book deleted successfully"
           end
-          Book.new(name).delete global
         end
       end
 
@@ -63,7 +73,11 @@ module RN
         ]
 
         def call(old_name:, new_name:, **)
-          Book.new(old_name).rename new_name
+          abort "global book cannot be renamed" unless not old_name == Helper.global_book
+          abort "this book cannot be renamed because a book with this name already exists" unless not Helper.book_exists? new_name
+          Helper.check_folder_name new_name
+          Book.new(old_name).rename Helper.format_name new_name
+          puts "book renamed successfully"
         end
       end
     end
