@@ -1,0 +1,5 @@
+<h1>New Note</h1>
+
+<%= render 'form', note: @note, url: book_notes_path(params[:book_id]) %>
+
+<%= link_to 'Back', book_notes_path(params[:book_id]) %>

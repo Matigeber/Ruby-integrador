@@ -1,0 +1,6 @@
+<h1>Editing Note</h1>
+
+<%= render 'form', note: @note, url: book_note_path(@note.book_id,@note.id) %>
+
+<%= link_to 'Show', book_note_path(@note.book_id,@note.id) %> |
+<%= link_to 'Back', book_notes_path(@note.book_id) %>

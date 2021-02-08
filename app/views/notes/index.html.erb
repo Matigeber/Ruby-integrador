@@ -1,0 +1,29 @@
+<p id="notice"><%= notice %></p>
+
+<h1>Notes for book <%= "#{current_user.search_book(params[:book_id]).name}" %></h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th colspan="3"></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @notes.each do |note| %>
+      <tr>
+        <td><%= note.title %></td>
+        <td><%= link_to 'Show', book_note_path(note.book_id,note.id)%></td>
+        <td><%= link_to 'Edit', edit_book_note_path(note.book_id,note.id) %></td>
+        <td><%= button_to 'Export', export_book_note_path(note.book_id,note.id), method: :put %></td>
+        <td><%= button_to 'Destroy', book_note_path(note.book_id,note.id), method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<%= link_to 'New Note', new_book_note_path(params[:book_id]) %>
+<%= link_to 'Back', books_path %>
