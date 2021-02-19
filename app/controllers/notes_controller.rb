@@ -1,10 +1,10 @@
 class NotesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_note, only: %i[ show edit update destroy ]
+  before_action :set_note, only: %i[ show edit update destroy export ]
 
   # GET /notes or /notes.json
   def index
-    @notes = Book.find(params[:book_id]).notes
+    @notes = current_user.books.find(params[:book_id]).notes
   end
 
   # GET book/id/notes/1 or /notes/1.json
@@ -12,9 +12,8 @@ class NotesController < ApplicationController
   end
 
   def export
-    note = Note.find(params[:id])
-    note.export
-    redirect_to book_notes_path(note.book_id), notice: "Note was successfully export."
+    send_data @note.transform_to_html, :filename => "#{@note.title}.html"
+    #redirect_to book_notes_path(note.book_id), notice: "Note was successfully export."
   end
 
   # GET /notes/new

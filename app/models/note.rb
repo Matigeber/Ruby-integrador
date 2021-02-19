@@ -5,10 +5,8 @@ class Note < ApplicationRecord
             presence: true, length: {maximum: 40}
 
 
-  def export
+  def transform_to_html
     markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML, autolink: true)
     render = markdown.render(self.content)
-    self.content = render
-    self.save
   end
 end

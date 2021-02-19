@@ -1,5 +1,3 @@
-<p id="notice"><%= notice %></p>
-
 <h1>Books</h1>
 
 <table>
@@ -17,10 +15,16 @@
         <td><%= book.name %></td>
         <td><%= book.notes.count %></td>
         <td><%= link_to 'Show', book %></td>
-        <td><%= link_to 'Rename', edit_book_path(book) %></td>
+        <% if not book.is_global? %>
+          <td><%= link_to 'Rename', edit_book_path(book) %></td>
+        <% end %>
         <td><%= link_to 'View notes', book_notes_path(book) %></td>
         <td><%= button_to 'Export notes', export_book_path(book), method: :put %></td>
-        <td><%= link_to 'Destroy', book, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+        <% if not book.is_global? %>
+          <td><%= button_to 'Destroy', book, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+          <% else %>
+          <td><%= button_to 'Delete notes', book, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+        <% end %>
       </tr>
     <% end %>
   </tbody>

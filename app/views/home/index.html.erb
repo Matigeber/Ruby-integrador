@@ -1,14 +1,16 @@
-
-<% if user_signed_in? %>
-  <h1>Hi <%= "#{current_user.email}" %></h1>
+<div style="text-align: center">
+  <% if user_signed_in? %>
+    <h1>Hi <%= "#{current_user.email}" %></h1>
   <% else %>
     <h1> Welcome to your annotator</h1>
   <% end %>
-<!--<p>Esta aplicacion permite la creacion de notas organizadas en cuadernos para que usted pueda anotar lo que necesite. Tambien puede escribir en texto rico exportandolo a HTML</p>-->
-<p>This aplication allows the creation of notes organized in books so that you can write down what you need.
-  Too you can write in rich text by exporting it in HTML </p>
+
+  <p>This aplication allows the creation of notes organized in books so that you can write down what you need.
+    Too you can write in rich text by exporting it in HTML </p>
+
+</div>
 <%if user_signed_in? %>
-  <div>
-    <%= link_to 'Show Books', books_path %>
+  <div style="text-align: center; ">
+    <%= link_to 'Show Books', books_path, class:"show_book_button" %>
   </div>
 <%end %>

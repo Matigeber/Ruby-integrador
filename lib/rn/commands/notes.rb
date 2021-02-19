@@ -183,10 +183,10 @@ module RN
           global = options[:global]
 
           if global and title
-            Book.new(Helper.global_book).create_Note(title).export
+            Book.new(Helper.global_book).create_Note(title).transform_to_html
             abort("successful export")
           elsif book and title
-            Book.new(book).create_Note(title).export
+            Book.new(book).create_Note(title).transform_to_html
             abort("successful export")
           elsif global and title.nil?
             Book.new(Helper.global_book).export_childs

@@ -33,7 +33,7 @@ class Book
     Dir.each_child(self.path) do
     |note|
       note = note.split(".")[0]
-      Note.new(note,self).export
+      Note.new(note,self).transform_to_html
     end
   end
 

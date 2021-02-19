@@ -1,6 +1,7 @@
+require 'zip'
 class BooksController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_book, only: %i[ show edit update destroy ]
+  before_action :set_book, only: %i[ show edit update destroy export ]
 
   # GET /books or /books.json
   def index
@@ -22,14 +23,35 @@ class BooksController < ApplicationController
   end
 
   def export
-    book = Book.find(params[:id])
-    book.export_notes
-    redirect_to book_notes_path(book.id), notice: "All notes of the book was successfully export."
+    compiled_file = Zip::OutputStream.write_buffer do |html_file|
+      @book.notes.each do |note|
+        html_file.put_next_entry("#{note.title}.html")
+        html_file << note.transform_to_html
+      end
+    end
+    compiled_file.rewind
+    send_data compiled_file.sysread, filename: "#{@book.name}.zip", :type => 'application/zip'
+    #redirect_to book_notes_path(book.id), notice: "All notes of the book was successfully export."
   end
 
   def export_all
-    current_user.export_all_books
-    redirect_to books_path, notice: "All notes of the all books was successfully export."
+    compiled_book = Zip::OutputStream.write_buffer do |zip_book|
+      current_user.books.each do |book |
+        compiled_note = Zip::OutputStream.write_buffer do |html_note|
+          book.notes.each do |note|
+            html_note.put_next_entry("#{note.title}.html")
+            html_note << note.transform_to_html
+          end
+        end
+        compiled_note.rewind
+        if not book.notes.empty?
+          zip_book.put_next_entry("#{book.name}.zip")
+          zip_book << compiled_note.sysread
+        end
+      end
+    end
+    compiled_book.rewind
+    send_data compiled_book.sysread, filename: "All_books.zip", :type => 'application/zip'
   end
 
   # POST /books or /books.json
@@ -57,15 +79,20 @@ class BooksController < ApplicationController
         format.html { render :edit, status: :unprocessable_entity }
         format.json { render json: @book.errors, status: :unprocessable_entity }
       end
-    end
+    end unless @book.is_global?
   end
 
   # DELETE /books/1 or /books/1.json
   def destroy
-    @book.destroy
-    respond_to do |format|
-      format.html { redirect_to books_url, notice: "Book was successfully destroyed." }
-      format.json { head :no_content }
+    if @book.is_global?
+      @book.notes.delete_all
+      redirect_to books_url, notice: "Notes of global book was successfully deleted."
+    else
+      @book.destroy
+      respond_to do |format|
+        format.html { redirect_to books_url, notice: "Book was successfully destroyed." }
+        format.json { head :no_content }
+      end
     end
   end
 

@@ -43,7 +43,7 @@ class Note
     data
   end
 
-  def export
+  def transform_to_html
     markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML, autolink: true)
     render = markdown.render(self.content_note)
     File.new(self.path("html"),"w+").write(render)
