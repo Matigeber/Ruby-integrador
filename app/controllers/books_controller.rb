@@ -31,7 +31,6 @@ class BooksController < ApplicationController
     end
     compiled_file.rewind
     send_data compiled_file.sysread, filename: "#{@book.name}.zip", :type => 'application/zip'
-    #redirect_to book_notes_path(book.id), notice: "All notes of the book was successfully export."
   end
 
   def export_all
